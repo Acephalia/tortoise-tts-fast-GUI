@@ -494,6 +494,8 @@ class TextToSpeech:
         }
         # Presets are defined here.
         presets = {
+        
+            
             "single_sample": {
                 "num_autoregressive_samples": 8,
                 "diffusion_iterations": 10,
@@ -528,6 +530,14 @@ class TextToSpeech:
                 "num_autoregressive_samples": 256,
                 "diffusion_iterations": 400,
             },
+            
+            "super_fast": {
+                "num_autoregressive_samples": 4,
+                "diffusion_iterations": 100,
+                "temperature": 0.6,
+                "sampler": "ddim",
+            },
+            
         }
         settings.update(presets[preset])
         settings.update(kwargs)  # allow overriding of preset settings with kwargs
