@@ -49,4 +49,4 @@ To Do :
 3. ~~Fix Download Audio file~~
 
 ------------------
-Visit the original repo for more info
+Visit the original repo for more info https://github.com/152334H/tortoise-tts-fast
