@@ -6,6 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 from random import randint
+import numpy as np
 
 from tortoise.api import MODELS_DIR
 
@@ -135,27 +136,35 @@ def main():
             )
             steps = st.number_input(
                 "Steps",
-                help="Override the steps used for diffusion (default depends on preset)",
-                value=10,
+                help="Override the steps used for diffusion. 30 seems to be the best middle ground. Feel free to experiment. (default depends on preset)",
+                step=1,
+                value=30,
             )
             
             num_autoregressive_samples = st.number_input(
                 "Samples",
-                help="Number of autoregressive samples to use",
+                help="Number of samples taken from the autoregressive model, all of which are filtered using CLVP. As Tortoise is a probabilistic model, more samples means a higher probability of creating something great.",
+                step=1,
                 value=10,
             )
             
-            temperature = st.number_input(
-                "Temperature",
-                help="Temp Value 0.1-1",
+            diffusion_temperature = st.number_input(
+                "Diffusion Temperature",
+                help="Controls the variance of the noise fed into the diffusion model. Values at 0 are the mean prediction of the diffusion network and will sound bland and smeared.",
+                step=0.1,
+                min_value=0.0,
+                max_value=1.0,
+                format="%0.1f",
                 value=0.5,
+                
             )
             
             
             diffusion_iterations = st.number_input(
             "Iterations",
-             help="Number of times to iterate",
-             value=100,
+             help="Number of diffusion steps to perform. [0,4000]. More steps means the network has more chances to iteratively refine the output, which should theoretically mean a higher quality output. Generally a value above 250 is not noticeably better,however.",
+             step=1,
+             value=30,
              )
                 
             seed = st.number_input(
@@ -289,14 +298,18 @@ def main():
                             preset=preset,
                             use_deterministic_seed=seed,
                             return_deterministic_state=True,
+                            num_autoregressive_samples=num_autoregressive_samples,
+                            diffusion_temperature=diffusion_temperature,
                             cvvp_amount=0.0,
                             half=half,
-                            latent_averaging_mode=LATENT_MODES.index(
-                                latent_averaging_mode
-                            ),
-                            **nullable_kwargs,
+                            latent_averaging_mode=LATENT_MODES.index(latent_averaging_mode),
+                            diffusion_iterations=diffusion_iterations
                         )
-
+                    
+                    
+                    
+                    
+                    
                     if len(text) < min_chars_to_split:
                         filepaths = run_and_save_tts(
                             call_tts,
@@ -331,8 +344,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-# Print generation settings
-st.write("Generation settings:")
-st.write(f"Number of autoregressive samples: {num_autoregressive_samples}")
-st.write(f"Temperature: {temperature}")
-st.write(f"Diffusion iterations: {diffusion_iterations}")
