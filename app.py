@@ -247,18 +247,18 @@ def main():
         assert preset
         assert voice
 
-        def show_generation(fp, filename: str):
-            """
-            audio_buffer = BytesIO()
-            save_gen_with_voicefix(g, audio_buffer, squeeze=False)
-            torchaudio.save(audio_buffer, g, 24000, format='wav')
-            """
-            st.audio(str(fp), format="audio/wav")
-            st.download_button(
-                "Download sample",
-                str(fp),
-                file_name=filename,  # this doesn't actually seem to work lol
-            )
+        def show_generation(fp, filename: str):          
+            with open(fp, "rb") as f:          
+                audio_bytes = f.read()          
+            st.audio(audio_bytes, format="audio/wav")          
+            st.download_button(          
+                "Download sample",          
+                audio_bytes,          
+                file_name=filename,          
+                mime="audio/wav"          
+            )          
+                  
+                  
 
         with st.spinner(
             f"Generating {candidates} candidates for voice {voice} (seed={seed}). You can see progress in the terminal"
@@ -343,4 +343,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
