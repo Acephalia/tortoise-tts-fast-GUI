@@ -531,13 +531,6 @@ class TextToSpeech:
                 "diffusion_iterations": 400,
             },
             
-            "super_fast": {
-                "num_autoregressive_samples": 4,
-                "diffusion_iterations": 100,
-                "temperature": 0.6,
-                "sampler": "ddim",
-            },
-            
         }
         settings.update(presets[preset])
         settings.update(kwargs)  # allow overriding of preset settings with kwargs
