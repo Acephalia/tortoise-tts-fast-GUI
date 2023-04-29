@@ -1,7 +1,7 @@
 ## Info 
 This fork contains an updated Streamlit GUI which adds generation settings for more control and experimentation. 152334H fork of Tortoise-TTS has the best likeness to imported voices at the moments, in my humble opinion. The mrq version has much better nuances and control but adds an American accent to most of my impported voices that are not fine tuned which was driving me nuts. I just wanted to have the extra settings mrq had on thier gradio UI. I taught mysef some streamlit and python and got the GUI working and fixed a few annoying issues with it along the way. I'm not sure how far i can develop this or keep it updated with my knowledge but for the time being it works. 
 
-### FAQ
+## FAQ
 1. Will this work on an older 8gb and under card? Yes it will. Just check Low VRAM in the gui.
 2. Is the install easy? It relatively is. There is a proper (AHEM!) step by step guide below.
 
