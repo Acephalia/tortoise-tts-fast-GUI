@@ -1,5 +1,5 @@
 
-This fork contains an updated Streamlit GUI which adds generation settings for more control and experimentation. 
+This fork contains an updated Streamlit GUI which adds more settings than the original version for more control and experimentation. 
 
 To install on Windows please follow these steps (It was very unclear in the original repo and a lot of users had issues) :
 Open a miniconda/anaconda terminal as an administrator
@@ -46,7 +46,7 @@ streamlit run app.py
 To Do :
 1. Add remaining settings 
 2. Fix files being overwritten
-3. Fix Download Audio file
+~~3. Fix Download Audio file~~
 
 ------------------
 Visit the original repo for more info
