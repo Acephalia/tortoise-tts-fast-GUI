@@ -46,7 +46,7 @@ streamlit run app.py
 To Do :
 1. Add remaining settings 
 2. Fix files being overwritten
-~~3. Fix Download Audio file~~
+3. ~~Fix Download Audio file~~
 
 ------------------
 Visit the original repo for more info
