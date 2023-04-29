@@ -102,9 +102,7 @@ def main():
             "ultra_fast_old",
             "fast",
             "standard",
-            "high_quality",
-             "super_fast",
-             
+            "high_quality",             
              
         ),
         help="Which voice preset to use.",
