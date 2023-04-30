@@ -78,10 +78,10 @@ back into your env and run
 *Replace xyz and repeat till all missing modules are installed.*
 
 ## To Do :
-1. Add remaining settings 
+1. ~~Add remaining settings~~ 
 2. Fix files being overwritten
 3. ~~Fix Download Audio file~~
-4. Add 
+4. `` Fix multiple file download~~
 
 ## How To Make Proper Samples For Cloning
 Coming Soon
