@@ -79,9 +79,9 @@ back into your env and run
 
 ## To Do :
 1. ~~Add remaining settings~~ 
-2. Fix files being overwritten
+2. Fix files being overwritten in results folder
 3. ~~Fix Download Audio file~~
-4. `` Fix multiple file download~~
+4. ~~Fix multiple candidate download~~
 
 ## How To Make Proper Samples For Cloning
 Coming Soon
