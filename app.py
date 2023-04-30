@@ -119,7 +119,12 @@ def main():
                 help="Diffusion sampler. Note that dpm++2m is experimental and typically requires more steps.",
                 index=1,
             )
-            
+            steps = st.number_input(
+                "Steps",
+                help="Override the steps used for diffusion. 30 seems to be the best middle ground. Feel free to experiment. (default depends on preset)",
+                step=1,
+                value=30,
+            )
             num_autoregressive_samples = st.number_input(
                 "Samples",
                 help="Number of samples taken from the autoregressive model, all of which are filtered using CLVP. As Tortoise is a probabilistic model, more samples means a higher probability of creating something great.",
@@ -134,7 +139,7 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=1.0,
+                value=0.5,
                 
             )      
             
@@ -232,7 +237,7 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=2.0,
+                value=1.0,
                 
             )
             
@@ -243,7 +248,7 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=4.0,
+                value=2.0,
                 
             )
             
@@ -253,7 +258,10 @@ def main():
                 help="Whether or not to produce debug_state.pth, which can aid in reproducing problems. Defaults to true.",
                 value=True,
             )                        
-      
+
+            
+            
+            
 
     ar_checkpoint = "."
     diff_checkpoint = "." 
@@ -289,6 +297,14 @@ def main():
         with st.spinner(
             f"Generating {candidates} candidates for voice {voice} (seed={seed}). You can see progress in the terminal"
         ):
+            nullable_kwargs = {
+                        k: v
+                        for k, v in zip(
+                            ["sampler", "diffusion_iterations", "cond_free"],
+                            [sampler, steps, cond_free],
+                        )
+                        if v is not None
+                    }
             os.makedirs(output_path, exist_ok=True)
 
             selected_voices = voice.split(",")
@@ -310,7 +326,7 @@ def main():
                         k: v
                         for k, v in zip(
                             ["sampler", "diffusion_iterations", "cond_free"],
-                            [sampler, num_autoregressive_samples, cond_free],
+                            [sampler, steps, cond_free],
                         )
                         if v is not None
                     }
