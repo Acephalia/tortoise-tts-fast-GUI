@@ -3,7 +3,8 @@
 import os
 import shutil
 from pathlib import Path
-
+import time
+import base64
 import streamlit as st
 # Set the title of the app
 st.set_page_config(page_title="Tortoise TTS Fast GUI")
@@ -281,19 +282,22 @@ def main():
         assert latent_averaging_mode
         assert voice
 
-        def show_generation(fp, filename: str):          
-            with open(fp, "rb") as f:          
-                audio_bytes = f.read()          
-            st.audio(audio_bytes, format="audio/wav")          
-            st.download_button(          
-                "Download sample",          
-                audio_bytes,          
-                file_name=filename,          
-                mime="audio/wav"          
-            )          
-                  
-                  
-
+              
+        def show_generation(fp, filename: str): 
+            with open(fp, "rb") as f: 
+                audio_bytes = f.read()
+            st.audio(audio_bytes, format="audio/wav") 
+            def download():
+                with open(fp, "rb") as f:
+                    audio_bytes = f.read()
+                b64 = base64.b64encode(audio_bytes).decode()
+                href = f'<a href="data:application/octet-stream;base64,{b64}" download="{filename}">Download sample</a>'
+                return href
+            st.markdown(download(), unsafe_allow_html=True)
+        
+        
+        
+        
         with st.spinner(
             f"Generating {candidates} candidates for voice {voice} (seed={seed}). You can see progress in the terminal"
         ):
@@ -306,7 +310,7 @@ def main():
                         if v is not None
                     }
             os.makedirs(output_path, exist_ok=True)
-
+        
             selected_voices = voice.split(",")
             for k, selected_voice in enumerate(selected_voices):
                 if "&" in selected_voice:
@@ -316,9 +320,9 @@ def main():
                 voice_samples, conditioning_latents = load_voice_conditionings(
                     voice_sel, []
                 )
-
+        
                 voice_path = Path(os.path.join(output_path, selected_voice))
-
+        
                 with timeit(
                     f"Generating {candidates} candidates for voice {selected_voice} (seed={seed})"
                 ):
