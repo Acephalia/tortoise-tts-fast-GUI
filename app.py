@@ -5,6 +5,8 @@ import shutil
 from pathlib import Path
 
 import streamlit as st
+# Set the title of the app
+st.set_page_config(page_title="Tortoise TTS Fast GUI")
 from random import randint
 import numpy as np
 
@@ -93,22 +95,7 @@ def main():
         "Use the & character to join two voices together. Use a comma to perform inference on multiple voices.",
         index=0,
     )
-    preset = st.selectbox(
-        "Preset",
-        (
-            "single_sample",
-            "ultra_fast",
-            "very_fast",
-            "ultra_fast_old",
-            "fast",
-            "standard",
-            "high_quality",             
-             
-        ),
-        help="Which voice preset to use.",
-        index=1,
-    )
-    
+       
    
     with st.expander("Advanced"):
         col1, col2 = st.columns(2)
@@ -132,12 +119,6 @@ def main():
                 help="Diffusion sampler. Note that dpm++2m is experimental and typically requires more steps.",
                 index=1,
             )
-            steps = st.number_input(
-                "Steps",
-                help="Override the steps used for diffusion. 30 seems to be the best middle ground. Feel free to experiment. (default depends on preset)",
-                step=1,
-                value=30,
-            )
             
             num_autoregressive_samples = st.number_input(
                 "Samples",
@@ -153,10 +134,9 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=0.5,
+                value=1.0,
                 
-            )
-            
+            )      
             
             diffusion_iterations = st.number_input(
             "Iterations",
@@ -218,13 +198,62 @@ def main():
                 value=200,
                 step=1,
             )
-
+            
+            
+            
+            st.write("") # Add an empty line here
+                        
+            top_p = st.number_input(
+                "Top P",
+                help="Variation in voice. Boring to crazy",
+                step=0.1,
+                min_value=0.0,
+                max_value=1.0,
+                format="%0.1f",
+                value=0.5,
+                
+            )
+            
+            temperature = st.number_input(
+                "Temperature",
+                help="",
+                step=0.1,
+                min_value=0.0,
+                max_value=1.0,
+                format="%0.1f",
+                value=0.5,
+                
+            )
+            
+            length_penalty = st.number_input(
+                "Length Penalty",
+                help="",
+                step=0.1,
+                min_value=0.0,
+                max_value=8.0,
+                format="%0.1f",
+                value=2.0,
+                
+            )
+            
+            repetition_penalty = st.number_input(
+                "Repetition Penalty",
+                help="",
+                step=0.1,
+                min_value=0.0,
+                max_value=8.0,
+                format="%0.1f",
+                value=4.0,
+                
+            )
+            
             """#### Debug"""
             produce_debug_state = st.checkbox(
                 "Produce Debug State",
                 help="Whether or not to produce debug_state.pth, which can aid in reproducing problems. Defaults to true.",
                 value=True,
-            )
+            )                        
+      
 
     ar_checkpoint = "."
     diff_checkpoint = "." 
@@ -242,7 +271,6 @@ def main():
 
     if st.button("Start"):
         assert latent_averaging_mode
-        assert preset
         assert voice
 
         def show_generation(fp, filename: str):          
@@ -282,31 +310,31 @@ def main():
                         k: v
                         for k, v in zip(
                             ["sampler", "diffusion_iterations", "cond_free"],
-                            [sampler, steps, cond_free],
+                            [sampler, num_autoregressive_samples, cond_free],
                         )
                         if v is not None
                     }
 
-                    def call_tts(text: str):
-                        return tts.tts_with_preset(
-                            text,
-                            k=candidates,
-                            voice_samples=voice_samples,
-                            conditioning_latents=conditioning_latents,
-                            preset=preset,
-                            use_deterministic_seed=seed,
-                            return_deterministic_state=True,
-                            num_autoregressive_samples=num_autoregressive_samples,
-                            diffusion_temperature=diffusion_temperature,
-                            cvvp_amount=0.0,
-                            half=half,
-                            latent_averaging_mode=LATENT_MODES.index(latent_averaging_mode),
-                            diffusion_iterations=diffusion_iterations
-                        )
-                    
-                    
-                    
-                    
+                    def call_tts(text: str):           
+                        return tts.tts_custom(           
+                            text,           
+                            k=candidates,           
+                            voice_samples=voice_samples,           
+                            conditioning_latents=conditioning_latents,           
+                            use_deterministic_seed=seed,           
+                            return_deterministic_state=True,           
+                            num_autoregressive_samples=num_autoregressive_samples,           
+                            diffusion_temperature=diffusion_temperature,           
+                            cvvp_amount=0.0,           
+                            half=half,           
+                            latent_averaging_mode=LATENT_MODES.index(latent_averaging_mode),           
+                            diffusion_iterations=diffusion_iterations,  
+                            top_p=top_p,
+                            temperature=temperature,
+                            repetition_penalty=repetition_penalty,
+                            length_penalty=length_penalty,         
+                        )           
+                               
                     
                     if len(text) < min_chars_to_split:
                         filepaths = run_and_save_tts(
