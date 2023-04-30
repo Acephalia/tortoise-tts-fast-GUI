@@ -473,68 +473,22 @@ class TextToSpeech:
                 torch.tensor([0.0])
             )
 
-    def tts_with_preset(self, text, preset="fast", **kwargs):
-        """
-        Calls TTS with one of a set of preset generation parameters. Options:
-            'single_sample': Produces speech even faster, but only produces 1 sample.
-            'ultra_fast': Produces speech much faster than the original tortoise repo.
-            'ultra_fast_old': Produces speech at a speed which belies the name of this repo. (Not really, but it's definitely fastest).
-            'fast': Decent quality speech at a decent inference rate. A good choice for mass inference.
-            'standard': Very good quality. This is generally about as good as you are going to get.
-            'high_quality': Use if you want the absolute best. This is not really worth the compute, though.
-        """
-        # Use generally found best tuning knobs for generation.
-        settings = {
-            "temperature": 0.2,
-            "length_penalty": 1.0,
-            "repetition_penalty": 2.0,
-            "top_p": 0.8,
-            "cond_free_k": 2.0,
-            "diffusion_temperature": 1.0,
-        }
-        # Presets are defined here.
-        presets = {
-        
-            
-            "single_sample": {
-                "num_autoregressive_samples": 8,
-                "diffusion_iterations": 10,
-                "sampler": "ddim",
-            },
-            "ultra_fast": {
-                "num_autoregressive_samples": 16,
-                "diffusion_iterations": 10,
-                "sampler": "ddim",
-            },
-            "ultra_fast_old": {
-                "num_autoregressive_samples": 16,
-                "diffusion_iterations": 30,
-                "cond_free": False,
-            },
-            "very_fast": {
-                "num_autoregressive_samples": 32,
-                "diffusion_iterations": 30,
-                "sampler": "dpm++2m",
-            },
-            "fast": {
-                "num_autoregressive_samples": 96,
-                "diffusion_iterations": 20,
-                "sampler": "dpm++2m",
-            },
-            "fast_old": {"num_autoregressive_samples": 96, "diffusion_iterations": 80},
-            "standard": {
-                "num_autoregressive_samples": 256,
-                "diffusion_iterations": 200,
-            },
-            "high_quality": {
-                "num_autoregressive_samples": 256,
-                "diffusion_iterations": 400,
-            },
-            
-        }
-        settings.update(presets[preset])
-        settings.update(kwargs)  # allow overriding of preset settings with kwargs
-        return self.tts(text, **settings)
+    def tts_custom(self, text, **kwargs):  
+        """  
+        Calls TTS with custom generation parameters.  
+        """  
+        # Use generally found best tuning knobs for generation.  
+        settings = {  
+            "temperature": 0.2,  
+            "length_penalty": 1.0,  
+            "repetition_penalty": 2.0,  
+            "top_p": 0.5,  
+            "cond_free_k": 2.0,  
+            "diffusion_temperature": 1.0,  
+        }  
+        settings.update(kwargs) 
+        return self.tts(text, **settings)  
+      
 
     def tts(
         self,
@@ -666,6 +620,7 @@ class TextToSpeech:
             self.autoregressive = self.autoregressive.to(self.device)
             if verbose:
                 print("Generating autoregressive samples..")
+                
             with self.temporary_cuda(
                 self.autoregressive
             ) as autoregressive, torch.autocast(
