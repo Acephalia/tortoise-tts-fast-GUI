@@ -2,6 +2,19 @@
 ## Info 
 This fork contains a completely reworked Streamlit GUI. The 152334H fork of Tortoise-TTS has the best likeness to imported voices at the moment, in my humble opinion. The [mrq version](https://git.ecker.tech/mrq/ai-voice-cloning) has much better nuances and control but adds an American accent to most of my imported voices that are not fine tuned which was driving me nuts. I started working on this because I just wanted to have the extra settings mrq had on their Gradio UI. So I taught myself some Streamlit and python and got the GUI working. I've also fixed a few annoying issues along the way and added some extra features. I'm not sure how far I can develop this or keep it updated with my knowledge but for the time being it works. 
 
+## Jump To
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [FAQ](#faq)
+- [Prerequisites](#prerequisites)
+- [Installaton](#installaton)
+  * [Run GUI](#run-gui)
+  * [Troubleshooting](#troubleshooting)
+      - [Poetry Missing](#poetry-missing)
+      - [Modules Missing](#modules-missing)
+- [To Do](#to-do--)
+- [How To Make Proper Samples For Cloning](#how-to-make-proper-samples-for-cloning)
+
 ## Features
 - Fully reworked GUI 
 - Fully control all generation parameters.
@@ -64,7 +77,7 @@ streamlit run app.py
 ```
 *Set your drive letter and path in my case s:/tortoise-tts-fast-GUI*
 
-## Troubleshooting
+### Troubleshooting
 
 ##### Poetry Missing
 Install Poetry into your environment 
