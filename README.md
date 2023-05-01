@@ -1,11 +1,20 @@
-## Info 
-This fork contains an updated Streamlit GUI which adds generation settings for more control and experimentation. 152334H fork of Tortoise-TTS has the best likeness to imported voices at the moments, in my humble opinion. The mrq version has much better nuances and control but adds an American accent to most of my impported voices that are not fine tuned which was driving me nuts. I just wanted to have the extra settings mrq had on thier gradio UI. I taught mysef some streamlit and python and got the GUI working and fixed a few annoying issues with it along the way. I'm not sure how far I can develop this or keep it updated with my knowledge but for the time being it works. 
 
-![Advanced GUI Settings](https://i.imgur.com/3Pd6EXx.jpg)
+## Info 
+This fork contains a completely reworked Streamlit GUI. The 152334H fork of Tortoise-TTS has the best likeness to imported voices at the moment, in my humble opinion. The [mrq version](https://git.ecker.tech/mrq/ai-voice-cloning) has much better nuances and control but adds an American accent to most of my imported voices that are not fine tuned which was driving me nuts. I started working on this because I just wanted to have the extra settings mrq had on their Gradio UI. So I taught myself some Streamlit and python and got the GUI working. I've also fixed a few annoying issues along the way and added some extra features. I'm not sure how far I can develop this or keep it updated with my knowledge but for the time being it works. 
+
+## Features
+- Fully reworked GUI 
+- Fully control all generation parameters.
+- Generate and dump conditioning latent for faster generations or for use with other ML models. 
+- Download multiple generated candidates. 
+
+## Screenshots 
+![Advanced GUI Settings](https://i.imgur.com/rR5TWg4.jpg)
 
 ## FAQ
-1. Will this work on an older 8gb and under card? Yes it will. Just check Low VRAM in the gui.
-2. Is the install easy? It relatively is. There is a proper (AHEM!) step by step guide below.
+1. **Will this work on an older 8gb and under card?** Yes it will. Just check Low VRAM in the gui.
+2. **Is the install easy?** It relatively is. There is a proper (AHEM!) step by step guide below.
+4. **Can I save conditional latents?** Yes you can!
 
 ## Prerequisites 
 1. CudaToolkit : [Download from here](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local) and install. Choose custom install and uncheck everything except the cudatoolkit option. Your graphic driver will have more updated drivers for the other components you **DON'T WANT TO CHANGE THAT**.
@@ -82,6 +91,9 @@ back into your env and run
 2. Fix files being overwritten in results folder
 3. ~~Fix Download Audio file~~
 4. ~~Fix multiple candidate download~~
+5. ~~Add voice refresh~~
+6. ~~Add GUI to create and download conditional latents~~
+7. ~~Automatically create conditional latents in voice folder~~
 
 ## How To Make Proper Samples For Cloning
 Coming Soon
