@@ -1,6 +1,7 @@
 # AGPL: a notification must be added stating that changes have been made to that file.
 
 import os
+import subprocess
 import shutil
 from pathlib import Path
 import time
@@ -39,7 +40,9 @@ LATENT_MODES = [
 def main():
     conf = TortoiseConfig()
     
-    with st.expander("Create New Voice", expanded=True):
+    st.title("Tortoise Fast GUI")
+    
+    with st.expander("Create New Voice", expanded=False):
         if "file_uploader_key" not in st.session_state:
             st.session_state["file_uploader_key"] = str(randint(1000, 100000000))
             st.session_state["text_input_key"] = str(randint(1000, 100000000))
@@ -81,24 +84,57 @@ def main():
                 st.session_state["file_uploader_key"] = str(randint(1000, 100000000))
                 st.experimental_rerun()
 
+    with st.expander("Generate Conditioning Latent", expanded=False):                                                                                                        
+        # Define the list of voices                                                                                                                                          
+        voices = [v for v in os.listdir("tortoise/voices") if v != "cond_latent_example"]                                                                                    
+                                                                                                                                                                             
+        # Define the list of options for the dropdown menu                                                                                                                   
+        options = ["Generate Latent"] + voices                                                                                                                               
+                                                                                                                                                                             
+        # Create the dropdown menu, radio button group, and "Execute" button                                                                                                 
+        choice = st.selectbox("Select a voice to generate the latent for", options)                                                                                          
+        if choice != "Generate Latent":                                                                                                                                      
+            latent_averaging_mode = st.radio("Latent Averaging Mode", [0, 1, 2], index=1)                                                                                    
+            if st.button("Execute"):                                                                                                                                         
+                # Call the script to generate the conditioning latent                                                                                                        
+                st.write(f"Generating latent for {choice}...")                                                                                                               
+                process = subprocess.run(                                                                                                                                    
+                    ["python", "scripts/get_conditioning_latents.py", "--voice", choice, "--latent_averaging_mode", str(latent_averaging_mode)],                             
+                    capture_output=True,  # capture both standard output and standard error                                                                                  
+                    text=True,  # decode the output to a string                                                                                                              
+                )                                                                                                                                                            
+                if process.returncode == 0:                                                                                                                                  
+                    st.write("Latent generated successfully!")                                                                                                               
+                    st.code(process.stdout)                                                                                                                                  
+                else:                                                                                                                                                        
+                    st.write(f"Error generating latent: {process.stderr}")                                                                                                   
+
+    
+      
     text = st.text_area(
         "Text",
         help="Text to speak.",
         value="The expressiveness of autoregressive transformers is literally nuts! I absolutely adore them.",
     )
 
-    voices = [v for v in os.listdir("tortoise/voices") if v != "cond_latent_example"]
+    def refresh_voices():
+        global voices
+        voices = [v for v in os.listdir("tortoise/voices") if v != "cond_latent_example"]
 
-    voice = st.selectbox(
-        "Voice",
-        voices,
-        help="Selects the voice to use for generation. See options in voices/ directory (and add your own!) "
-        "Use the & character to join two voices together. Use a comma to perform inference on multiple voices.",
-        index=0,
-    )
-       
-   
-    with st.expander("Advanced"):
+    voices = [v for v in os.listdir("tortoise/voices") if v != "cond_latent_example"]                                                                                                      
+                                                                                                                                                                                           
+    voice = st.selectbox(                                                                                                                                                                  
+        "Voice",                                                                                                                                                                           
+        voices,                                                                                                                                                                            
+        help="Selects the voice to use for generation. See options in voices/ directory (and add your own!) "                                                                              
+        "Use the & character to join two voices together. Use a comma to perform inference on multiple voices.",                                                                           
+        index=0,                                                                                                                                                                           
+    )  
+    # Add a "Refresh" link
+    if st.button("Refresh"):                                                                                                                    
+        refresh_voices()                                                                                                                       
+    
+    with st.expander("Settings", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
             """#### Model parameters"""
@@ -120,6 +156,54 @@ def main():
                 help="Diffusion sampler. Note that dpm++2m is experimental and typically requires more steps.",
                 index=1,
             )
+            
+        with col2:
+            """#### Optimizations"""
+            high_vram = not st.checkbox(
+                "Low VRAM",
+                help="Re-enable default offloading behaviour of tortoise",
+                value=True,
+            )
+            
+            voice_fixer = st.checkbox(
+                "Voice fixer",
+                help="Use `voicefixer` to improve audio quality. This is a post-processing step which can be applied to any output.",
+                value=True,
+            )
+            
+            half = st.checkbox(
+                "Half-Precision",
+                help="Enable autocast to half precision for autoregressive model",
+                value=False,
+            )
+            kv_cache = st.checkbox(
+                "Key-Value Cache",
+                help="Enable kv_cache usage, leading to drastic speedups but worse memory usage",
+                value=True,
+            )
+            cond_free = st.checkbox(
+                "Conditioning Free",
+                help="Force conditioning free diffusion",
+                value=True,
+            )
+            no_cond_free = st.checkbox(
+                "Force Not Conditioning Free",
+                help="Force disable conditioning free diffusion",
+                value=False,
+            )
+
+            """#### Text Splitting"""
+            min_chars_to_split = st.number_input(
+                "Min Chars to Split",
+                help="Minimum number of characters to split text on",
+                min_value=50,
+                value=200,
+                step=1,
+            )
+            
+    with st.expander("Advanced" , expanded=True):
+        col1, col2 = st.columns(2)
+        with col1:        
             
             num_autoregressive_samples = st.number_input(
                 "Samples",
@@ -151,59 +235,13 @@ def main():
                 help="Random seed which can be used to reproduce results.",
                 value=-1,
             )
+            
             if seed == -1:
                 seed = None
-            voice_fixer = st.checkbox(
-                "Voice fixer",
-                help="Use `voicefixer` to improve audio quality. This is a post-processing step which can be applied to any output.",
-                value=True,
-            )
-            """#### Directories"""
-            output_path = st.text_input(
-                "Output Path", help="Where to store outputs.", value="results/"
-            )
+                   
 
-        with col2:
-            """#### Optimizations"""
-            high_vram = not st.checkbox(
-                "Low VRAM",
-                help="Re-enable default offloading behaviour of tortoise",
-                value=True,
-            )
-            half = st.checkbox(
-                "Half-Precision",
-                help="Enable autocast to half precision for autoregressive model",
-                value=False,
-            )
-            kv_cache = st.checkbox(
-                "Key-Value Cache",
-                help="Enable kv_cache usage, leading to drastic speedups but worse memory usage",
-                value=True,
-            )
-            cond_free = st.checkbox(
-                "Conditioning Free",
-                help="Force conditioning free diffusion",
-                value=True,
-            )
-            no_cond_free = st.checkbox(
-                "Force Not Conditioning Free",
-                help="Force disable conditioning free diffusion",
-                value=False,
-            )
-
-            """#### Text Splitting"""
-            min_chars_to_split = st.number_input(
-                "Min Chars to Split",
-                help="Minimum number of characters to split text on",
-                min_value=50,
-                value=200,
-                step=1,
-            )
-            
-            
-            
-            st.write("") # Add an empty line here
-                        
+        with col2:       
+                                               
             top_p = st.number_input(
                 "Top P",
                 help="Variation in voice. Boring to crazy",
@@ -233,7 +271,7 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=1.0,
+                value=2.0,
                 
             )
             
@@ -244,22 +282,30 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=2.0,
+                value=4.0,
                 
             )
             
+    
+    with st.expander("Other" , expanded=True):
+        col1, col2 = st.columns(2)
+        with col1:        
+            
+            """#### Directories"""
+            output_path = st.text_input(
+                "Output Path", help="Where to store outputs.", value="results/"
+            )
+        
+        with col2:
+        
             """#### Debug"""
             produce_debug_state = st.checkbox(
                 "Produce Debug State",
                 help="Whether or not to produce debug_state.pth, which can aid in reproducing problems. Defaults to true.",
                 value=True,
             )                        
-
-            
-            
-            
-
-    ar_checkpoint = "."
+                                                                                                                                                
+    ar_checkpoint = "."                                                                                                                                  
     diff_checkpoint = "." 
     if st.button("Update Basic Settings"):
         conf.update(
