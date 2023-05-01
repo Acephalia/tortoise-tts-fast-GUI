@@ -120,12 +120,7 @@ def main():
                 help="Diffusion sampler. Note that dpm++2m is experimental and typically requires more steps.",
                 index=1,
             )
-            steps = st.number_input(
-                "Steps",
-                help="Override the steps used for diffusion. 30 seems to be the best middle ground. Feel free to experiment. (default depends on preset)",
-                step=1,
-                value=30,
-            )
+            
             num_autoregressive_samples = st.number_input(
                 "Samples",
                 help="Number of samples taken from the autoregressive model, all of which are filtered using CLVP. As Tortoise is a probabilistic model, more samples means a higher probability of creating something great.",
@@ -304,8 +299,8 @@ def main():
             nullable_kwargs = {
                         k: v
                         for k, v in zip(
-                            ["sampler", "diffusion_iterations", "cond_free"],
-                            [sampler, steps, cond_free],
+                            ["sampler", "cond_free"],
+                            [sampler,  cond_free],
                         )
                         if v is not None
                     }
@@ -329,8 +324,8 @@ def main():
                     nullable_kwargs = {
                         k: v
                         for k, v in zip(
-                            ["sampler", "diffusion_iterations", "cond_free"],
-                            [sampler, steps, cond_free],
+                            ["sampler", "cond_free"],
+                            [sampler, cond_free],
                         )
                         if v is not None
                     }
@@ -348,9 +343,9 @@ def main():
                             cvvp_amount=0.0,           
                             half=half,           
                             latent_averaging_mode=LATENT_MODES.index(latent_averaging_mode),           
-                            diffusion_iterations=diffusion_iterations,  
                             top_p=top_p,
                             temperature=temperature,
+                            diffusion_iterations=diffusion_iterations,
                             repetition_penalty=repetition_penalty,
                             length_penalty=length_penalty,         
                         )           
