@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 import time
 import base64
+import random
 import streamlit as st
 # Set the title of the app
 st.set_page_config(page_title="Tortoise TTS Fast GUI")
@@ -236,9 +237,21 @@ def main():
                 value=-1,
             )
             
+           
             if seed == -1:
+                seed = random.randint(1, 922337203)
+            elif seed == 0:
                 seed = None
-                   
+
+            cvvp_amount = st.number_input(
+                "CVVP",
+                help="cvvp amount",
+                step=0.1,
+                min_value=0.0,
+                max_value=1.0,
+                format="%0.1f",
+                value=0.0,
+            )
 
         with col2:       
                                                
@@ -386,7 +399,7 @@ def main():
                             return_deterministic_state=True,           
                             num_autoregressive_samples=num_autoregressive_samples,           
                             diffusion_temperature=diffusion_temperature,           
-                            cvvp_amount=0.0,           
+                            cvvp_amount=cvvp_amount,           
                             half=half,           
                             latent_averaging_mode=LATENT_MODES.index(latent_averaging_mode),           
                             top_p=top_p,
