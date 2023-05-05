@@ -12,6 +12,7 @@ import streamlit as st
 st.set_page_config(page_title="Tortoise TTS Fast GUI")
 from random import randint
 import numpy as np
+import json
 
 from tortoise.api import MODELS_DIR
 
@@ -109,8 +110,8 @@ def main():
                     st.code(process.stdout)                                                                                                                                  
                 else:                                                                                                                                                        
                     st.write(f"Error generating latent: {process.stderr}")                                                                                                   
-
-    
+                                                                                                                                                                            
+                                                                                                                                                                            
       
     text = st.text_area(
         "Text",
@@ -202,17 +203,80 @@ def main():
                 step=1,
             )
             
+    with st.expander("Load preset"):
+        presets = {}
+        try:
+            with open("presets.json", "r") as f:                   
+                presets = json.load(f)
+        except FileNotFoundError:
+            st.warning("No presets found.")
+    
+        preset_names = list(presets.keys())                      
+        if not preset_names:
+            st.warning("No presets found.")
+        else:
+            preset_name = st.selectbox("Choose a preset", preset_names)                                         
+    
+        col1, col2 = st.columns(2)
+        with col1:
+            # Update the values displayed in the GUI with the selected preset                                                        
+            if st.button("Load preset"):
+                preset_values = presets[preset_name]
+                st.session_state.num_autoregressive_samples = preset_values.get("num_autoregressive_samples", st.session_state.num_autoregressive_samples)                   
+                st.session_state.diffusion_temperature = preset_values.get("diffusion_temperature", st.session_state.diffusion_temperature)
+                st.session_state.diffusion_iterations = preset_values.get("diffusion_iterations", st.session_state.diffusion_iterations)
+                st.session_state.seed = preset_values.get("seed", st.session_state.seed)
+                st.session_state.cvvp_amount = preset_values.get("cvvp_amount", st.session_state.cvvp_amount)
+                st.session_state.top_p = preset_values.get("top_p", st.session_state.top_p)
+                st.session_state.temperature = preset_values.get("temperature", st.session_state.temperature)
+                st.session_state.length_penalty = preset_values.get("length_penalty", st.session_state.length_penalty)
+                st.session_state.repetition_penalty = preset_values.get("repetition_penalty", st.session_state.repetition_penalty)
+                st.session_state.cond_free_k = preset_values.get("cond_free_k", st.session_state.cond_free_k)
+    
+                # Display a message confirming that the preset has been loaded            
+                st.success(f"Preset '{preset_name}' loaded!")
+        with col2:        
+         # Add a button to delete the selected preset                                                                                                                                                                         
+            if st.button("Delete preset"):                                                                                                                                                                                                  
+                del presets[preset_name]                                                                                                                                                    
+                with open("presets.json", "w") as f:                                                                                                                                                                                      
+                   json.dump(presets, f)                                                                                                                                                                                      
+                st.success(f"Preset '{preset_name}' deleted!")                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                
+    # Initialize session state variables
+    if "num_autoregressive_samples" not in st.session_state:
+        st.session_state.num_autoregressive_samples = 10
+    if "diffusion_temperature" not in st.session_state:
+        st.session_state.diffusion_temperature = 1.0
+    if "diffusion_iterations" not in st.session_state:
+        st.session_state.diffusion_iterations = 30
+    if "seed" not in st.session_state:
+        st.session_state.seed = -1
+    if "cvvp_amount" not in st.session_state:
+        st.session_state.cvvp_amount = 0.0
+    if "top_p" not in st.session_state:
+        st.session_state.top_p = 0.8
+    if "temperature" not in st.session_state:
+        st.session_state.temperature = 0.5
+    if "length_penalty" not in st.session_state:
+        st.session_state.length_penalty = 2.0                             
+    if "repetition_penalty" not in st.session_state:                             
+        st.session_state.repetition_penalty = 4.0  
+    if "cond_free_k" not in st.session_state:                             
+        st.session_state.cond_free_k = 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+            
     with st.expander("Advanced" , expanded=True):
         col1, col2 = st.columns(2)
         with col1:        
             
-            num_autoregressive_samples = st.number_input(
-                "Samples",
+            num_autoregressive_samples = st.number_input(                                                                        
+                "Samples",                                                                                                       
                 help="Number of samples taken from the autoregressive model, all of which are filtered using CLVP. As Tortoise is a probabilistic model, more samples means a higher probability of creating something great.",
-                step=1,
-                value=10,
-            )
-            
+                step=1,                                                                                                          
+                value=st.session_state.get("num_autoregressive_samples", 10),  # Use the current session state value or default to 10                                                                                                        
+            )                                                                                                                    
+                                                                                                                                 
             diffusion_temperature = st.number_input(
                 "Diffusion Temperature",
                 help="Controls the variance of the noise fed into the diffusion model. Values at 0 are the mean prediction of the diffusion network and will sound bland and smeared.",
@@ -220,7 +284,7 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=0.5,
+                value=st.session_state.get("diffusion_temperature", 1.0),  # Use the current session state value or default to 1.0
                 
             )      
             
@@ -228,7 +292,7 @@ def main():
             "Iterations",
              help="Number of diffusion steps to perform. [0,4000]. More steps means the network has more chances to iteratively refine the output, which should theoretically mean a higher quality output. Generally a value above 250 is not noticeably better,however.",
              step=1,
-             value=30,
+             value=st.session_state.get("diffusion_iterations", 30),  # Use the current session state value or default to 30
              )
                 
             seed = st.number_input(
@@ -250,7 +314,7 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=0.0,
+                value=st.session_state.get("cvvp_amount", 0.0),  # Use the current session state value or default to 0.0
             )
 
         with col2:       
@@ -262,7 +326,7 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=0.5,
+                value=st.session_state.get("top_p", 0.8),  # Use the current session state value or default to 0.8
                 
             )
             
@@ -273,7 +337,7 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 format="%0.1f",
-                value=0.5,
+                value=st.session_state.get("temperature", 0.5),  # Use the current session state value or default to 0.5
                 
             )
             
@@ -284,10 +348,12 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=2.0,
+                value=st.session_state.get("length_penalty", 2.0),  # Use the current session state value or default to 2.0
                 
             )
             
+                   
+                                                                                                                          
             repetition_penalty = st.number_input(
                 "Repetition Penalty",
                 help="",
@@ -295,12 +361,56 @@ def main():
                 min_value=0.0,
                 max_value=8.0,
                 format="%0.1f",
-                value=4.0,
+                value=st.session_state.get("repetition_penalty", 4.0),  # Use the current session state value or default to 4.0
                 
-            )
+            )         
             
+            cond_free_k = st.number_input(
+                "Cond Free K",
+                help="Balance the conditioning free signal with the conditioning present signal.",
+                step=1,
+                min_value=1,
+                max_value=4,
+                value=st.session_state.get("cond_free_k", 2),  # Use the current session state value or default to 2
+                
+            )                                                                                                   
+
     
-    with st.expander("Other" , expanded=True):
+    with st.expander("Save Preset" , expanded=False):
+    
+        # Add a button to save the settings as a preset
+            preset_name = st.text_input("Enter a name for the preset", value="", max_chars=50)
+            if st.button("Save preset"):
+                if not preset_name:
+                    st.warning("Please enter a name for the preset.")
+                else:
+                    presets = {}
+                    try:
+                        with open("presets.json", "r") as f:
+                            presets = json.load(f)
+                    except FileNotFoundError:
+                        pass
+                    presets[preset_name] = {
+                        "num_autoregressive_samples": num_autoregressive_samples,
+                        "diffusion_temperature": diffusion_temperature,
+                        "diffusion_iterations": diffusion_iterations,
+                        "seed": seed,
+                        "cvvp_amount": cvvp_amount,
+                        "top_p": top_p,
+                        "temperature": temperature,
+                        "length_penalty": length_penalty,
+                        "repetition_penalty": repetition_penalty,
+                        "cond_free_k": cond_free_k,
+                    }
+                    with open("presets.json", "w") as f:
+                        json.dump(presets, f)
+                    st.success(f"Preset '{preset_name}' saved!")
+        
+        
+        
+                                                                                                                                                                     
+        
+    with st.expander("Other" , expanded=True):                                                                                                      
         col1, col2 = st.columns(2)
         with col1:        
             
@@ -406,7 +516,8 @@ def main():
                             temperature=temperature,
                             diffusion_iterations=diffusion_iterations,
                             repetition_penalty=repetition_penalty,
-                            length_penalty=length_penalty,         
+                            length_penalty=length_penalty,      
+                            cond_free_k=cond_free_k,   
                         )           
                                
                     
